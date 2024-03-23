@@ -20,3 +20,6 @@ jobs:
 
     - name: Run Go script
       run: go run ./that.go
+
+    - name: Retrieve commits.txt
+      run: cat commits.txt
