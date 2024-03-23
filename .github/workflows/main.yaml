@@ -1,0 +1,19 @@
+name: Print Commit Message
+
+on:
+  push:
+    branches:
+      - main  # Adjust this branch name as needed
+
+jobs:
+  print_commit_message:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Print commit message
+        run: |
+          echo "${{ github.event.head_commit.message }}" > commit_message.txt
+          cat commit_message.txt
