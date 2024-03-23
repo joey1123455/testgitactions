@@ -20,7 +20,7 @@ jobs:
 
     - name: Check for Go script
       run: |
-        if [ ! -f main.go ]; then
+        if [ ! -f that.go ]; then
           echo "Go script not found. Failing the workflow."
           exit 1
         fi
