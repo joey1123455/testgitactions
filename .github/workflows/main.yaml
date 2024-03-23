@@ -55,4 +55,4 @@ jobs:
       run: |
         git add .
         git commit -m "Update file via GitHub Actions"
-        git push origin automated-changes
+        git push origin main
