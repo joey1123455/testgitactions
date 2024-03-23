@@ -18,6 +18,18 @@ jobs:
       with:
         go-version: '^1.16'
 
+    - name: Check last commit message
+          id: check_commit
+          run: |
+            LAST_COMMIT_MESSAGE=$(git log -1 --pretty=format:"%s")
+            if [[ "$LAST_COMMIT_MESSAGE" == *"Update file via GitHub Actions"* ]]; then
+              echo "Last commit message indicates this workflow triggered the change. Exiting."
+              echo "::set-output name=skip::true"
+            else
+              echo "Last commit message does not indicate this workflow triggered the change."
+              echo "::set-output name=skip::false"
+            fi
+
     - name: Check for Go script
       run: |
         if [ ! -f that.go ]; then
