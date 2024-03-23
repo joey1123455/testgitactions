@@ -12,6 +12,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.GH_PAT }}
 
     - name: Set up Go
       uses: actions/setup-go@v1
@@ -56,5 +58,5 @@ jobs:
         git add .
         git commit -m "Update file via GitHub Actions"
         git push origin main
-      env:
-        GH_PAT: ${{ secrets.GH_PAT }}
+      # env:
+      #   GH_PAT: ${{ secrets.GH_PAT }}
