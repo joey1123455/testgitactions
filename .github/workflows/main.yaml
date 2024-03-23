@@ -47,8 +47,8 @@ jobs:
     - name: Configure Git
       if: steps.check_commit.outputs.skip == 'false'
       run: |
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "actions@github.com"
+        git config --global user.name "gopher"
+        git config --global user.email "folayanjoey@gmail.com"
 
     - name: Commit and push changes
       if: steps.check_commit.outputs.skip == 'false'
@@ -56,3 +56,5 @@ jobs:
         git add .
         git commit -m "Update file via GitHub Actions"
         git push origin main
+      env:
+        GH_PAT: ${{ secrets.GH_PAT }}
