@@ -3,22 +3,38 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
+	"strings"
 )
 
 func main() {
-	// Open the file in append mode. If the file doesn't exist, it will be created.
-	file, err := os.OpenFile("commits.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	// Execute git log command to get commit messages
+	cmd := exec.Command("git", "log", "--pretty=format:%s", "HEAD^..HEAD")
+	output, err := cmd.Output()
 	if err != nil {
-		fmt.Println("Error opening file:", err)
+		fmt.Printf("Error executing git log: %v\n", err)
+		return
+	}
+
+	// Split the output by newline to get individual commit messages
+	commitMessages := strings.Split(string(output), "\n")
+
+	// Open commit.txt for writing
+	file, err := os.Create("commit.txt")
+	if err != nil {
+		fmt.Printf("Error creating file: %v\n", err)
 		return
 	}
 	defer file.Close()
 
-	// Write "Hello, World!" to the file.
-	if _, err := file.WriteString("Hello, World!\n"); err != nil {
-		fmt.Println("Error writing to file:", err)
-		return
+	// Write each commit message to commit.txt
+	for _, message := range commitMessages {
+		_, err := file.WriteString(message + "\n")
+		if err != nil {
+			fmt.Printf("Error writing to file: %v\n", err)
+			return
+		}
 	}
 
-	fmt.Println("Successfully wrote to commits.txt")
+	fmt.Println("Commit messages written to commit.txt")
 }
