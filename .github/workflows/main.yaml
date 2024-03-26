@@ -32,6 +32,12 @@ jobs:
           echo "::set-output name=skip::false"
         fi
 
+    - name: Get Git logs
+      id: gitlogs
+      run: |
+        GIT_LOGS=$(git log --pretty=format:%s HEAD^..HEAD)
+        echo "GIT_LOGS=$GIT_LOGS" >> $GITHUB_ENV
+
     - name: Check for Go script
       run: |
         if [ ! -f that.go ]; then
