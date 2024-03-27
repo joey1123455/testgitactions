@@ -158,16 +158,24 @@ func updatePackageVersion(commit string, version *packageVersion) {
 	// breaking change major version
 	// chore patch
 	// default message patch
-	const maxPatchVersion = 99
+	const maxVersion = 99
 
 	switch {
 	case matchBugFixes(commit):
 		println("bug fix")
-		if version.patch < maxPatchVersion {
+		if version.patch < maxVersion {
 			version.patch++
 		} else {
 			version.minor++
 			version.patch = 0
+		}
+	case matchFeature(commit):
+		println("feature")
+		if version.minor < maxVersion {
+			version.minor++
+		} else {
+			version.major++
+			version.minor = 0
 		}
 	}
 }
