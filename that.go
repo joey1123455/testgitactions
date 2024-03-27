@@ -134,7 +134,7 @@ func parseLogs(logsList []string) []*gitLog {
 					commitMessage := strings.TrimSpace(logLine)
 
 					// TODO: update package version
-					updatePackageVersion(commitMessage, &packageVersion)
+					updatePackageVersion(strings.ToLower(commitMessage), &packageVersion)
 					logs[idx].message = commitMessage
 					// println()
 				}
@@ -163,7 +163,7 @@ func updatePackageVersion(commit string, version *packageVersion) {
 
 	switch {
 	case matchBugFixes(commit):
-		println("bug fix")
+		// println("bug fix")
 		if version.patch < maxVersion {
 			version.patch++
 		} else {
@@ -204,7 +204,7 @@ func matchFeature(comment string) bool {
 }
 
 func matchBreakingChange(commit string) bool {
-	pattern := `^(breaking)(\s)?(change)(es\s*)?`
+	pattern := `^(breaking)(\s|-)?(change)(es\s*)?`
 
 	regex := regexp.MustCompile(pattern)
 
