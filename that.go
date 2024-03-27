@@ -2,9 +2,12 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -30,10 +33,8 @@ type packageVersion struct {
 func main() {
 	// Set up the Git command
 	// cmd := exec.Command("git", "log", "--format=%s")
+	// TODO: retrieve time from db
 	cmd := exec.Command("git", "log")
-
-	// Set the working directory if needed
-	// cmd.Dir = "/path/to/your/repo"
 
 	// Create a pipe to capture the command output
 	stdout, err := cmd.StdoutPipe()
@@ -55,10 +56,12 @@ func main() {
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
 		line := scanner.Text()
-		gitLogs = append(gitLogs, line)
-	}
+		regex := regexp.MustCompile(`^[a-zA-Z0-9@#$%^&*()-_+=! ]+$`)
 
-	// Check for any errors during scanning
+		if regex.MatchString(line) {
+			gitLogs = append(gitLogs, line)
+		}
+	}
 	if err := scanner.Err(); err != nil {
 		fmt.Println("Error:", err)
 	}
@@ -68,30 +71,37 @@ func main() {
 		fmt.Println("Error:", err)
 	}
 
-	logsList := parseLogs(gitLogs)
+	log := parseLogs(gitLogs)
 	// Print the git log messages
-	for _, _ = range logsList {
-		// println(log.id)
-		// println(log.author.username)
-		// println(log.author.email)
-		// println(log.date.String())
-		// println(log.message)
-		// println()
-		print(".")
+	// for _, _ = range logsList {
+	// 	// println(log.id)
+	// 	// println(log.author.username)
+	// 	// println(log.author.email)
+	// 	// println(log.date.String())
+	// 	// println(log.message)
+	// 	// println()
+	// 	print(".")
+	// }
+	// println()
+
+	content := log[len(log)-1].date.String()
+
+	// Write the string to a file named "output.txt"
+	err = os.WriteFile("output.txt", []byte(content), 0644)
+	if err != nil {
+		fmt.Println("Error writing to file:", err)
+		return
 	}
-	println()
 }
 
 func parseLogs(logsList []string) []*gitLog {
 
 	logs := make([]*gitLog, 0)
-	//TODO: Retrieve from file
-	packageVersion := packageVersion{}
+	//DONE: Retrieve from file
+	packageVersion := readVersion()
 	for _, logLine := range logsList {
-		// println(logLine)
 		var newLog gitLog
 		if strings.HasPrefix(logLine, "commit") {
-			// If it does, print the string excluding the "commit" prefix
 			newLog = gitLog{
 				id: strings.TrimSpace(logLine[len("commit "):]),
 			}
@@ -99,13 +109,11 @@ func parseLogs(logsList []string) []*gitLog {
 
 		} else {
 			idx := len(logs) - 1
-			// println(idx)
+
 			switch {
 			case strings.HasPrefix(logLine, "Author:"):
 				pattern := regexp.MustCompile(`Author: (\w+) <([^>]+)>`)
-				// Find matches in the line
 				matches := pattern.FindStringSubmatch(logLine)
-				// Check if there's a match and extract username and email
 				if len(matches) == 3 {
 					logs[idx].author.username = matches[1]
 					logs[idx].author.email = matches[2]
@@ -113,8 +121,6 @@ func parseLogs(logsList []string) []*gitLog {
 
 			case strings.HasPrefix(logLine, "Date:"):
 				timeString := strings.TrimSpace(logLine[len("Date:"):])
-				// fmt.Println(logLine)
-				// println(timeString)
 				layout := "Mon Jan 02 15:04:05 2006 -0700"
 
 				// Parse the time string
@@ -123,7 +129,6 @@ func parseLogs(logsList []string) []*gitLog {
 					fmt.Println("Error parsing time:", err)
 				}
 
-				// convert the time to utc
 				logs[idx].date = t.UTC()
 
 			default:
@@ -133,16 +138,16 @@ func parseLogs(logsList []string) []*gitLog {
 				if regex.MatchString(logLine) {
 					commitMessage := strings.TrimSpace(logLine)
 
-					// TODO: update package version
-					updatePackageVersion(strings.ToLower(commitMessage), &packageVersion)
+					// DONE: update package version
+					updatePackageVersion(strings.ToLower(commitMessage), packageVersion)
 					logs[idx].message = commitMessage
-					// println()
+
 				}
-				// logs[idx].message = strings.TrimSpace(logLine)
-				// println(logs[idx].message)
 			}
 		}
 	}
+	// DONE: update package json version
+	updateVersionNo(packageVersion)
 	print(packageVersion.major)
 	print(".")
 	print(packageVersion.minor)
@@ -183,7 +188,7 @@ func updatePackageVersion(commit string, version *packageVersion) {
 		// println(commit)
 		version.major++
 	case matchChore(commit):
-		println("chore")
+		// println("chore")
 		if version.patch < maxVersion {
 			version.patch++
 		} else {
@@ -226,4 +231,99 @@ func matchChore(commit string) bool {
 	regex := regexp.MustCompile(pattern)
 
 	return regex.MatchString(commit)
+}
+
+func readVersion() *packageVersion {
+	file, err := os.Open("package.json")
+	if err != nil {
+		fmt.Println("Error opening JSON file:", err)
+		return nil
+	}
+	defer file.Close()
+
+	// Declare a map to store the JSON data
+	var jsonData map[string]interface{}
+
+	// Decode the JSON data
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&jsonData)
+	if err != nil {
+		fmt.Println("Error decoding JSON data:", err)
+		return nil
+	}
+
+	// Read the value of the "version" key
+	version, ok := jsonData["version"].(string)
+	if !ok {
+		fmt.Println("Error: 'version' is not a string")
+		return nil
+	}
+
+	// Split the string using "." as the delimiter
+	parts := strings.Split(version, ".")
+
+	// Check if the split produced three parts
+	if len(parts) != 3 {
+		fmt.Println("Error: The input string does not have three parts.")
+		return nil
+	}
+
+	major, err := strconv.Atoi(parts[0])
+	if err != nil {
+		println("while parsing major version:", err)
+	}
+
+	minor, err := strconv.Atoi(parts[1])
+	if err != nil {
+		println("while parsing minor version:", err)
+	}
+
+	patch, err := strconv.Atoi(parts[2])
+	if err != nil {
+		println("while parsing patch version:", err)
+	}
+
+	return &packageVersion{
+		major: major,
+		minor: minor,
+		patch: patch,
+	}
+}
+
+func updateVersionNo(version *packageVersion) {
+	fileData, err := os.ReadFile("package.json")
+	if err != nil {
+		fmt.Println("Error reading JSON file:", err)
+		return
+	}
+
+	// Declare a map to store the JSON data
+	var jsonData map[string]interface{}
+
+	// Unmarshal the JSON data into the map
+	err = json.Unmarshal(fileData, &jsonData)
+	if err != nil {
+		fmt.Println("Error unmarshaling JSON data:", err)
+		return
+	}
+
+	// Update the value associated with the "version" key
+	jsonData["version"] = fmt.Sprintf("%d.%d.%d", version.major, version.minor, version.patch)
+	// jsonData["version"] = "2.1.0"
+
+	// Marshal the updated data back to JSON
+	updatedData, err := json.MarshalIndent(jsonData, "", "    ")
+	if err != nil {
+		fmt.Println("Error marshaling JSON data:", err)
+		return
+	}
+
+	// Write the JSON data to the file
+	err = os.WriteFile("package.json", updatedData, 0644)
+	if err != nil {
+		fmt.Println("Error writing JSON file:", err)
+		return
+	}
+
+	fmt.Println("JSON file updated successfully.")
 }

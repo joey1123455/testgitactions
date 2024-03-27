@@ -24,7 +24,7 @@ jobs:
       id: check_commit
       run: |
         LAST_COMMIT_MESSAGE=$(git log -1 --pretty=format:"%s")
-        if [[ "$LAST_COMMIT_MESSAGE" == *"Update file via GitHub Actions"* ]]; then
+        if [[ "$LAST_COMMIT_MESSAGE" == *"Update node package version via GitHub Actions"* ]]; then
           echo "Last commit message indicates this workflow triggered the change. Exiting."
           echo "::set-output name=skip::true"
         else
@@ -57,7 +57,5 @@ jobs:
       if: steps.check_commit.outputs.skip == 'false'
       run: |
         git add .
-        git commit -m "Update file via GitHub Actions"
+        git commit -m "Update node package version via GitHub Actions"
         git push origin main
-      # env:
-      #   GH_PAT: ${{ secrets.GH_PAT }}
