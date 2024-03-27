@@ -85,6 +85,8 @@ func main() {
 func parseLogs(logsList []string) []*gitLog {
 
 	logs := make([]*gitLog, 0)
+	//TODO: Retrieve from file
+	packageVersion := packageVersion{}
 	for _, logLine := range logsList {
 		// println(logLine)
 		var newLog gitLog
@@ -132,7 +134,7 @@ func parseLogs(logsList []string) []*gitLog {
 					commitMessage := strings.TrimSpace(logLine)
 
 					// TODO: update package version
-					updatePackageVersion(commitMessage)
+					updatePackageVersion(commitMessage, &packageVersion)
 					logs[idx].message = commitMessage
 					// println()
 				}
@@ -141,27 +143,48 @@ func parseLogs(logsList []string) []*gitLog {
 			}
 		}
 	}
+	print(packageVersion.major)
+	print(".")
+	print(packageVersion.minor)
+	print(".")
+	print(packageVersion.patch)
+	println()
 	return logs
 }
 
-func updatePackageVersion(commit string) {
+func updatePackageVersion(commit string, version *packageVersion) {
 	// Bug fixes patch
 	// features minor version
 	// breaking change major version
 	// chore patch
 	// default message patch
+	const maxPatchVersion = 99
 
 	switch {
 	case matchBugFixes(commit):
 		println("bug fix")
+		if version.patch < maxPatchVersion {
+			version.patch++
+		} else {
+			version.minor++
+			version.patch = 0
+		}
 	}
-
 }
 
 func matchBugFixes(comment string) bool {
 	pattern := `^(bug)(\s)?(fix)(es\s*)?`
 
 	// Compile the regular expression pattern
+	regex := regexp.MustCompile(pattern)
+
+	return regex.MatchString(comment)
+}
+
+func matchFeature(comment string) bool {
+	// pattern := `^(feat)(\s)?(new|feature|features|new feature|new-features|new feature(s))`
+	pattern := `^(feat)`
+
 	regex := regexp.MustCompile(pattern)
 
 	return regex.MatchString(comment)
