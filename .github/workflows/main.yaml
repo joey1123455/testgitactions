@@ -35,13 +35,13 @@ jobs:
 
     - name: Check for Go script
       run: |
-        if [ ! -f that.go ]; then
+        if [ ! -f .github/workflows/that.go ]; then
           echo "Go script not found. Failing the workflow."
           exit 1
         fi
 
     - name: Run Go script
-      run: go run that.go
+      run: go run .github/workflows/that.go
 
     - name: Retrieve commits.txt
       run: cat commits.txt
