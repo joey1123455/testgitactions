@@ -172,13 +172,16 @@ func updatePackageVersion(commit string, version *packageVersion) {
 		}
 	case matchFeature(commit):
 		// println("feature")
-		println(commit)
+		// println(commit)
 		if version.minor < maxVersion {
 			version.minor++
 		} else {
 			version.major++
 			version.minor = 0
 		}
+	case matchBreakingChange(commit):
+		println(commit)
+		version.major++
 	}
 }
 
@@ -192,10 +195,18 @@ func matchBugFixes(comment string) bool {
 }
 
 func matchFeature(comment string) bool {
-	pattern := `^(feat(ure)?|new(\s|-)?feature)`
+	pattern := `^(feat(ure)?|new(\s|-)?feat(ure)?)`
 	// pattern := `^(feat)`
 
 	regex := regexp.MustCompile(pattern)
 
 	return regex.MatchString(comment)
+}
+
+func matchBreakingChange(commit string) bool {
+	pattern := `^(breaking)(\s)?(change)(es\s*)?`
+
+	regex := regexp.MustCompile(pattern)
+
+	return regex.MatchString(commit)
 }
