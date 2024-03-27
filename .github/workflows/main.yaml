@@ -41,6 +41,7 @@ jobs:
         fi
 
     - name: Run Go script
+      if: steps.check_commit.outputs.skip == 'false'
       run: go run .github/workflows/that.go
 
     - name: Retrieve commits.txt
