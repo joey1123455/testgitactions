@@ -84,10 +84,10 @@ func main() {
 	// }
 	// println()
 
-	content := log[len(log)-1].date.String()
+	content := log[0].date.String()
 
 	// Write the string to a file named "output.txt"
-	err = os.WriteFile("output.txt", []byte(content), 0644)
+	err = os.WriteFile(".github/workflows/lastOp.txt", []byte(content), 0644)
 	if err != nil {
 		fmt.Println("Error writing to file:", err)
 		return
