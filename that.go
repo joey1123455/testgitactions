@@ -21,6 +21,12 @@ type gitLog struct {
 	date    time.Time
 }
 
+type packageVersion struct {
+	major int
+	minor int
+	patch int
+}
+
 func main() {
 	// Set up the Git command
 	// cmd := exec.Command("git", "log", "--format=%s")
@@ -114,21 +120,20 @@ func parseLogs(logsList []string) []*gitLog {
 					fmt.Println("Error parsing time:", err)
 				}
 
-				// Print the parsed time
-				logs[idx].date = t
-				// println(t.String())
-				// println(logs[idx].date.String())
-				// println()
+				// convert the time to utc
+				logs[idx].date = t.UTC()
 
 			default:
 				regex := regexp.MustCompile(`^[a-zA-Z0-9@#$%^&*()-_+=! ]+$`)
 
 				// Check if the string matches the regular expression
 				if regex.MatchString(logLine) {
-					fmt.Println("String contains spaces along with alphabets, numbers, or special symbols.")
-					// println(logLine)
-					logs[idx].message = strings.TrimSpace(logLine)
-					println()
+					commitMessage := strings.TrimSpace(logLine)
+
+					// TODO: update package version
+					updatePackageVersion(commitMessage)
+					logs[idx].message = commitMessage
+					// println()
 				}
 				// logs[idx].message = strings.TrimSpace(logLine)
 				// println(logs[idx].message)
@@ -138,16 +143,25 @@ func parseLogs(logsList []string) []*gitLog {
 	return logs
 }
 
-func startsWithCommit(s string) bool {
-	// Define the regular expression pattern
-	pattern := `^commit\s`
+func updatePackageVersion(commit string) {
+	// Bug fixes patch
+	// features minor version
+	// breaking change major version
+	// chore patch
+	// default message patch
+
+	switch {
+	case matchBugFixes(commit):
+		println("bug fix")
+	}
+
+}
+
+func matchBugFixes(comment string) bool {
+	pattern := `^bugfixes\s*`
 
 	// Compile the regular expression pattern
 	regex := regexp.MustCompile(pattern)
 
-	// Use FindStringIndex to check if the string matches the pattern at the beginning
-	if idx := regex.FindStringIndex(s); idx != nil && idx[0] == 0 {
-		return true
-	}
-	return false
+	return regex.MatchString(comment)
 }
