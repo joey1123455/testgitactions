@@ -180,7 +180,7 @@ func updatePackageVersion(commit string, version *packageVersion) {
 			version.minor = 0
 		}
 	case matchBreakingChange(commit):
-		println(commit)
+		// println(commit)
 		version.major++
 	}
 }
