@@ -159,7 +159,7 @@ func updatePackageVersion(commit string) {
 }
 
 func matchBugFixes(comment string) bool {
-	pattern := `^(bug)(\s)(fix)(es\s*)`
+	pattern := `^(bug)(\s)?(fix)(es\s*)?`
 
 	// Compile the regular expression pattern
 	regex := regexp.MustCompile(pattern)
