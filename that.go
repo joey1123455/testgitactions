@@ -70,15 +70,16 @@ func main() {
 
 	logsList := parseLogs(gitLogs)
 	// Print the git log messages
-	for _, log := range logsList {
-		println(log.id)
-		println(log.author.username)
-		println(log.author.email)
-		println(log.date.String())
-		println(log.message)
-		println()
-		// print(".")
+	for _, _ = range logsList {
+		// println(log.id)
+		// println(log.author.username)
+		// println(log.author.email)
+		// println(log.date.String())
+		// println(log.message)
+		// println()
+		print(".")
 	}
+	println()
 }
 
 func parseLogs(logsList []string) []*gitLog {
