@@ -159,6 +159,7 @@ func updatePackageVersion(commit string, version *packageVersion) {
 	// chore patch
 	// default message patch
 	const maxVersion = 99
+	// println(commit)
 
 	switch {
 	case matchBugFixes(commit):
@@ -191,7 +192,7 @@ func matchBugFixes(comment string) bool {
 }
 
 func matchFeature(comment string) bool {
-	pattern := `^(feat(ure)?|new feature)`
+	pattern := `^(feat(ure)?|new(\s|-)?feature)`
 	// pattern := `^(feat)`
 
 	regex := regexp.MustCompile(pattern)
