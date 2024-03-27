@@ -7,4 +7,4 @@ ttime
 
 be like e soft
 
-be like i bad gonnnn
+be like i bad gonnnn uuuu
